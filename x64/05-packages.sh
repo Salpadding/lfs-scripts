@@ -72,14 +72,75 @@ packages=(
     https://www.python.org/ftp/python/3.12.2/Python-3.12.2.tar.xz
     https://ftp.gnu.org/gnu/texinfo/texinfo-7.1.tar.xz
     https://www.kernel.org/pub/linux/utils/util-linux/v2.39/util-linux-2.39.3.tar.xz
+
+    https://www.kernel.org/pub/linux/docs/man-pages/man-pages-6.06.tar.xz
+    https://github.com/Mic92/iana-etc/releases/download/20240125/iana-etc-20240125.tar.gz
+    https://zlib.net/fossils/zlib-1.3.1.tar.gz    
+    https://www.sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
+    https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz
+    https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz
+    https://github.com/gavinhoward/bc/releases/download/6.7.5/bc-6.7.5.tar.xz
+    https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz
+    https://downloads.sourceforge.net/tcl/tcl8.6.13-src.tar.gz
+    https://prdownloads.sourceforge.net/expect/expect5.45.4.tar.gz
+    https://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.3.tar.gz
+    https://distfiles.ariadne.space/pkgconf/pkgconf-2.1.1.tar.xz
+    https://download.savannah.gnu.org/releases/attr/attr-2.5.2.tar.gz
+    https://download.savannah.gnu.org/releases/acl/acl-2.3.2.tar.xz
+    https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.69.tar.xz
+    https://github.com/besser82/libxcrypt/releases/download/v4.4.36/libxcrypt-4.4.36.tar.xz
+    https://github.com/shadow-maint/shadow/releases/download/4.14.5/shadow-4.14.5.tar.xz
+    https://sourceforge.net/projects/psmisc/files/psmisc/psmisc-23.6.tar.xz
+    https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.xz
+    https://ftp.gnu.org/gnu/gdbm/gdbm-1.23.tar.gz
+    https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz
+    https://prdownloads.sourceforge.net/expat/expat-2.6.0.tar.xz
+    https://ftp.gnu.org/gnu/inetutils/inetutils-2.5.tar.xz
+    https://www.greenwoodsoftware.com/less/less-643.tar.gz
+    https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz
+    https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz
+    https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz
+    https://www.openssl.org/source/openssl-3.2.1.tar.gz
+    https://www.kernel.org/pub/linux/utils/kernel/kmod/kmod-31.tar.xz
+    https://sourceware.org/ftp/elfutils/0.190/elfutils-0.190.tar.bz2
+    https://github.com/libffi/libffi/releases/download/v3.4.4/libffi-3.4.4.tar.gz
+    https://pypi.org/packages/source/f/flit-core/flit_core-3.9.0.tar.gz
+    https://pypi.org/packages/source/w/wheel/wheel-0.42.0.tar.gz
+    https://pypi.org/packages/source/s/setuptools/setuptools-69.1.0.tar.gz
+    https://github.com/ninja-build/ninja/archive/v1.11.1/ninja-1.11.1.tar.gz
+    https://github.com/mesonbuild/meson/releases/download/1.3.2/meson-1.3.2.tar.gz
+    https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz
+    https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
+    https://www.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.7.0.tar.xz
+    https://www.kernel.org/pub/linux/utils/kbd/kbd-2.6.4.tar.xz
+    https://download.savannah.gnu.org/releases/libpipeline/libpipeline-1.5.7.tar.gz
+    https://github.com/vim/vim/archive/v9.1.0041/vim-9.1.0041.tar.gz
+    https://pypi.org/packages/source/M/MarkupSafe/MarkupSafe-2.1.5.tar.gz
+    https://pypi.org/packages/source/J/Jinja2/Jinja2-3.1.3.tar.gz
+    https://anduin.linuxfromscratch.org/LFS/udev-lfs-20230818.tar.xz
+    https://download.savannah.gnu.org/releases/man-db/man-db-2.12.0.tar.xz
+    https://sourceforge.net/projects/procps-ng/files/Production/procps-ng-4.0.4.tar.xz
+    https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.47.0/e2fsprogs-1.47.0.tar.gz
+    https://www.infodrom.org/projects/sysklogd/download/sysklogd-1.5.1.tar.gz
+    https://github.com/slicer69/sysvinit/releases/download/3.08/sysvinit-3.08.tar.xz
 )
 
 
 install_all() {
 pushd "${LFS}/sources"
+
+local extras=(
+https://downloads.sourceforge.net/tcl/tcl8.6.13-html.tar.gz
+)
+
 for p in "${packages[@]}"; do
     [[ -f `basename ${p}` ]] || wget "${p}"
 done
+
+for p in "${extras[@]}"; do
+    [[ -f `basename ${p}` ]] || wget "${p}"
+done
+
 popd
 }
 
@@ -97,6 +158,18 @@ for p in "${packages[@]}"; do
 done
 }
 
-[[ -n "${*}" ]] && "${@}"
+install_patch() {
+    pushd "${LFS}/sources"
+    cat "${cur}/patch.csv" | while read line; do 
+        local url=$(echo "${line}" | awk '{print $2}')
+        local base=$(basename ${url})
+        
+        [[ -f "${base}" ]] || wget "${url}"
+    done
+
+    popd
+}
+
+[[ -n "${*}" ]] && "${@}" || dump_all
 
 popd

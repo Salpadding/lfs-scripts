@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "lfs_env.sh"
+source "x64/lfs_env.sh"
 check_lfs
 
 chroot "$LFS" /usr/bin/env -i   \
@@ -11,3 +11,5 @@ chroot "$LFS" /usr/bin/env -i   \
     MAKEFLAGS="-j$(nproc)"      \
     TESTSUITEFLAGS="-j$(nproc)" \
     /bin/bash --login
+
+mkdir -p /lfs

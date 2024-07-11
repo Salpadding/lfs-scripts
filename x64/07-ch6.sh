@@ -16,7 +16,7 @@ install_m4() {
             --host=$LFS_TGT \
             --build=$(build-aux/config.guess)
 
-    make 
+    safe_make
     make DESTDIR=$LFS install
     popd
 }
@@ -49,7 +49,7 @@ install_ncurses() {
                 --disable-stripping          \
                 --enable-widec
 
-        make 
+        safe_make 
         make DESTDIR="${LFS}" TIC_PATH=$(pwd)/build/progs/tic install
         ln -sv libncursesw.so "${LFS}/usr/lib/libncurses.so"
         sed -e 's/^#if.*XOPEN.*$/#if 1/' \
@@ -68,7 +68,7 @@ install_bash() {
             --host=$LFS_TGT                    \
             --without-bash-malloc
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
     ln -sv bash $LFS/bin/sh
@@ -79,14 +79,13 @@ install_bash() {
 install_coreutils() {
     reinstall coreutils
     push_into coreutils
-
 ./configure --prefix=/usr                     \
             --host=$LFS_TGT                   \
             --build=$(build-aux/config.guess) \
             --enable-install-program=hostname \
             --enable-no-install-program=kill,uptime
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
 
@@ -106,10 +105,8 @@ install_diff() {
             --host=$LFS_TGT \
             --build=$(./build-aux/config.guess)
 
-    make
+    safe_make
     make DESTDIR=$LFS install
-
-
 
     popd
 }
@@ -126,7 +123,7 @@ install_file() {
                --disable-libseccomp \
                --disable-xzlib      \
                --disable-zlib
-        make
+        safe_make
 
         popd
     }
@@ -149,7 +146,7 @@ install_find() {
             --host=$LFS_TGT                 \
             --build=$(build-aux/config.guess)
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
     popd
@@ -165,7 +162,7 @@ install_awk() {
             --host=$LFS_TGT \
             --build=$(build-aux/config.guess)
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
     popd
@@ -179,7 +176,7 @@ install_grep() {
             --host=$LFS_TGT \
             --build=$(./build-aux/config.guess)
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
     popd
@@ -190,7 +187,7 @@ install_gzip() {
     push_into gzip
 
     ./configure --prefix=/usr --host=$LFS_TGT
-    make
+    safe_make
     make DESTDIR=$LFS install
 
     popd
@@ -205,7 +202,7 @@ install_make() {
             --host=$LFS_TGT \
             --build=$(build-aux/config.guess)
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
 
@@ -220,7 +217,7 @@ install_patch() {
             --host=$LFS_TGT \
             --build=$(build-aux/config.guess)
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
 
@@ -235,7 +232,7 @@ install_sed() {
             --host=$LFS_TGT \
             --build=$(./build-aux/config.guess)
 
-    make 
+    safe_make
     make DESTDIR=$LFS install
 
 
@@ -250,7 +247,7 @@ install_tar() {
             --host=$LFS_TGT                   \
             --build=$(build-aux/config.guess)
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
 
@@ -268,7 +265,7 @@ install_xz() {
             --disable-static                  \
             --docdir=/usr/share/doc/xz-5.4.6
 
-    make
+    safe_make
     make DESTDIR=$LFS install
 
     rm -v $LFS/usr/lib/liblzma.la
@@ -297,7 +294,7 @@ install_binutils_p2() {
     --enable-64-bit-bfd        \
     --enable-default-hash-style=gnu
 
-        make
+        safe_make
         make DESTDIR=$LFS install
         rm -v $LFS/usr/lib/lib{bfd,ctf,ctf-nobfd,opcodes,sframe}.{a,la}
 
@@ -346,7 +343,7 @@ install_gcc_p2() {
     --disable-libvtv                               \
     --enable-languages=c,c++
 
-        make
+        safe_make
         make DESTDIR=$LFS install
 
         ln -sv gcc $LFS/usr/bin/cc
@@ -355,6 +352,26 @@ install_gcc_p2() {
 
 
     popd
+}
+
+all() {
+install_m4
+install_ncurses
+install_bash
+install_coreutils
+install_diff
+install_file
+install_find
+install_awk
+install_grep
+install_gzip
+install_make
+install_patch
+install_sed
+install_tar
+install_xz
+install_binutils_p2
+install_gcc_p2
 }
 
 [[ -n "${*}" ]] && "${@}"

@@ -21,8 +21,9 @@ install_binutils() {
              --enable-gprofng=no \
              --disable-werror    \
              --enable-default-hash-style=gnu
-    make
+    safe_make
     make install
+    popd
     popd
 }
 
@@ -63,7 +64,7 @@ install_gcc() {
     --disable-libstdcxx       \
     --enable-languages=c,c++
 
-    make
+    safe_make
     make install
 
     # pop build
@@ -118,7 +119,7 @@ esac
       --disable-nscd                     \
       libc_cv_slibdir=/usr/lib
 
-    make 
+    safe_make
     make DESTDIR=$LFS install
     sed '/RTLDLIST=/s@/usr@@g' -i $LFS/usr/bin/ldd
 
@@ -144,12 +145,20 @@ install_libstdcpp() {
         --disable-libstdcxx-pch         \
         --with-gxx-include-dir=/tools/$LFS_TGT/include/c++/13.2.0
 
-    make
+    safe_make
     make DESTDIR=$LFS install
     rm -v $LFS/usr/lib/lib{stdc++{,exp,fs},supc++}.la
 
     popd
     popd
+}
+
+all() {
+install_binutils
+install_gcc
+install_linux_header
+install_glibc
+install_libstdcpp
 }
 
 
