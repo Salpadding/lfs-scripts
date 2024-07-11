@@ -150,7 +150,7 @@ rm packages.csv
 for p in "${packages[@]}"; do
     local base=`basename "${p}"`
     # remove extensions
-    local stripped=`echo "${base}" | sed -e 's/.tar.xz$//' -e 's/.tar.gz$//'`
+    local stripped=`echo "${base}" | sed -e 's/.tar.xz$//' -e 's/.tar.gz$//' -e 's/.tar.bz2$//'`
     local awk_expr='{print $1}'
     local name=`echo "${stripped}" | sed -E 's/-[0-9.]+(-[0-9]+)?$//'`
     local version=`echo "${stripped}" | sed "s/^${name}-//"`

@@ -13,32 +13,23 @@ export LFS=/
 
 
 install_package() {
+
+reinstall "${1}"
+push_into "${1}"
+
 case "${1}" in
 man-pages)
-    reinstall "${1}"
-    push_into "${1}"
-
     rm -v man3/crypt*
     make prefix=/usr install
-
-    popd
 ;;
 
 iana-etc)
-    reinstall "${1}"
-    push_into "${1}"
     cp services protocols /etc
-
-    popd
 ;;
 
 glibc)
-    reinstall "${1}"
-    push_into "${1}"
-
     mkdir -v build
     pushd       build 
-    
     echo "rootsbindir=/usr/sbin" > configparms
 
     ../configure --prefix=/usr                            \
@@ -47,37 +38,24 @@ glibc)
                  --enable-stack-protector=strong          \
                  --disable-nscd                           \
                  libc_cv_slibdir=/usr/lib
-
     safe_make
     make check
     touch /etc/ld.so.conf
     sed '/test-installation/s@$(PERL)@echo not running@' -i ../Makefile
     make install
     sed '/RTLDLIST=/s@/usr@@g' -i /usr/bin/ldd
-
-
-    popd
     popd
 ;;
 
 zlib)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr
     safe_make
     make check
-
     make install
     rm -fv /usr/lib/libz.a
-
-    popd
 ;;
 
 bzip2)
-    reinstall "${1}"
-    push_into "${1}"
-
     sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
     sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
     safe_make -f Makefile-libbz2_so
@@ -87,118 +65,73 @@ bzip2)
     make PREFIX=/usr install
     cp -av libbz2.so.* /usr/lib
     ln -sv libbz2.so.1.0.8 /usr/lib/libbz2.so
-
     cp -v bzip2-shared /usr/bin/bzip2
     for i in /usr/bin/{bzcat,bunzip2}; do
       ln -sfv bzip2 $i
     done
-
     rm -fv /usr/lib/libbz2.a
-
-    popd
 ;;
 
 xz)
-    reinstall "${1}"
-    push_into "${1}"
-
 ./configure --prefix=/usr    \
             --disable-static \
             --docdir=/usr/share/doc/xz-5.4.6
-
     safe_make
     make check
     make install
-    
-
-    popd
 ;;
 
 zstd)
-    reinstall "${1}"
-    push_into "${1}"
-
     safe_make prefix=/usr
     make check
-
     make prefix=/usr install
     rm -v /usr/lib/libzstd.a
- 
-    popd
 ;;
 
 file)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr
     safe_make
-
     make check
     make install
-
-    popd
 ;;
 
 readline)
-    reinstall "${1}"
-    push_into "${1}"
-
     sed -i '/MV.*old/d' Makefile.in
     sed -i '/{OLDSUFF}/c:' support/shlib-install
 ./configure --prefix=/usr    \
             --disable-static \
             --with-curses    \
             --docdir=/usr/share/doc/readline-8.2
-
     safe_make SHLIB_LIBS="-lncursesw"
     make SHLIB_LIBS="-lncursesw" install
     install -v -m644 doc/*.{ps,pdf,html,dvi} /usr/share/doc/readline-8.2
 ;;
 m4)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr
     safe_make
     make check
     make install
-    popd
 ;;
 
 bc)
-    reinstall "${1}"
-    push_into "${1}"
-
     CC=gcc ./configure --prefix=/usr -G -O3 -r
     safe_make
     make test
     make install
-
-    popd
 ;;
-flex)
-    reinstall "${1}"
-    push_into "${1}"
 
+flex)
     ./configure --prefix=/usr \
             --docdir=/usr/share/doc/flex-2.6.4 \
             --disable-static 
-
     safe_make
     make check
     make install
-    
     ln -sv flex   /usr/bin/lex
     ln -sv flex.1 /usr/share/man/man1/lex.1
-
-    popd
 ;;
 
 tcl)
-    reinstall "${1}"
-    push_into "${1}"
-
     SRCDIR=$(pwd)
     pushd unix
     ./configure --prefix=/usr           \
@@ -229,39 +162,26 @@ tcl)
     ln -sfv tclsh8.6 /usr/bin/tclsh
     mv /usr/share/man/man3/{Thread,Tcl_Thread}.3
     popd
-
     tar -xf ../tcl8.6.13-html.tar.gz --strip-components=1
     mkdir -v -p /usr/share/doc/tcl-8.6.13
     cp -v -r  ./html/* /usr/share/doc/tcl-8.6.13 
-
-    popd
 ;;
 
 expect)
-    reinstall "${1}"
-    push_into "${1}"
-
-
     ./configure --prefix=/usr           \
             --with-tcl=/usr/lib     \
             --enable-shared         \
             --mandir=/usr/share/man \
             --with-tclinclude=/usr/include
-    
     safe_make
     make test
     make install
     ln -svf expect5.45.4/libexpect5.45.4.so /usr/lib
-    popd
 ;;
 
 dejagnu)
-    reinstall "${1}"
-    push_into "${1}"
-
     mkdir -v build
     pushd       build
-    
     ../configure --prefix=/usr
     makeinfo --html --no-split -o doc/dejagnu.html ../doc/dejagnu.texi
     makeinfo --plaintext       -o doc/dejagnu.txt  ../doc/dejagnu.texi 
@@ -269,38 +189,22 @@ dejagnu)
     make install
     install -v -dm755  /usr/share/doc/dejagnu-1.6.3
     install -v -m644   doc/dejagnu.{html,txt} /usr/share/doc/dejagnu-1.6.3
-    
-    popd
-
     popd
 ;;
 
-
 pkgconf)
-    reinstall "${1}"
-    push_into "${1}"
-    
    ./configure --prefix=/usr              \
             --disable-static           \
             --docdir=/usr/share/doc/pkgconf-2.1.1 
-
-    
     safe_make
     make install
-
     ln -sv pkgconf   /usr/bin/pkg-config
     ln -sv pkgconf.1 /usr/share/man/man1/pkg-config.1
-
-    popd
 ;;
 
 binutils)
-    reinstall "${1}"
-    push_into "${1}"
-
     mkdir -v build
     pushd       build
-
     ../configure --prefix=/usr       \
              --sysconfdir=/etc   \
              --enable-gold       \
@@ -314,146 +218,89 @@ binutils)
 
     safe_make tooldir=/usr
     make -k check
-    
     grep '^FAIL:' $(find -name '*.log')
     make tooldir=/usr install
-
     rm -fv /usr/lib/lib{bfd,ctf,ctf-nobfd,gprofng,opcodes,sframe}.a
-
-    popd
     popd
 ;;
 
 gmp)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr    \
             --enable-cxx     \
             --disable-static \
             --docdir=/usr/share/doc/gmp-6.3.0
-
-    
     safe_make
     make html
-
     make check 2>&1 | tee gmp-check-log
-
     awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
     make install
     make install-html
-
-    popd
 ;;
 
 mpfr)
-    reinstall "${1}"
-    push_into "${1}"
-    
     ./configure --prefix=/usr        \
             --disable-static     \
             --enable-thread-safe \
             --docdir=/usr/share/doc/mpfr-4.2.1
-
-
     safe_make
     make install
     make check
     make install
     make install-html 
-    
-
-    popd
 ;;
-mpc)
-    reinstall "${1}"
-    push_into "${1}"
 
+mpc)
     ./configure --prefix=/usr    \
             --disable-static \
             --docdir=/usr/share/doc/mpc-1.3.1
-
     safe_make
     make html
     make check
     make install
     make install-html
-
-    popd
 ;;
 
 attr)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr     \
             --disable-static  \
             --sysconfdir=/etc \
             --docdir=/usr/share/doc/attr-2.5.2
-
     safe_make
     make check
     make install
-
-
-    popd
 ;;
 
 acl)
-    reinstall "${1}"
-    push_into "${1}"
-
    ./configure --prefix=/usr         \
             --disable-static      \
             --docdir=/usr/share/doc/acl-2.3.2 
-
     safe_make
     make install
-
-    popd
 ;;
 
 libcap)
-    reinstall "${1}"
-    push_into "${1}"
-
     sed -i '/install -m.*STA/d' libcap/Makefile
     safe_make prefix=/usr lib=lib
-
     make test
     make prefix=/usr lib=lib install
-
-
-    popd
 ;;
 
 libxcrypt)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr                \
             --enable-hashes=strong,glibc \
             --enable-obsolete-api=no     \
             --disable-static             \
             --disable-failure-tokens
-
     safe_make
     make check
-
     make install
-
-    popd
 ;;
 
 shadow)
-    reinstall "${1}"
-    push_into "${1}"
-
     sed -i 's/groups$(EXEEXT) //' src/Makefile.in
     find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
     find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
     find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
-
     sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD YESCRYPT:' \
     -e 's:/var/spool/mail:/var/mail:'                   \
     -e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                  \
@@ -467,24 +314,15 @@ shadow)
                 --with-group-name-max-length=32
 
     safe_make
-
     make exec_prefix=/usr install
     make -C man install-man
-
     pwconv
     grpconv
-
     mkdir -p /etc/default
     useradd -D --gid 999
-
-
-    popd
 ;;
 
 gcc)
-    reinstall "${1}"
-    push_into "${1}"
-
     case $(uname -m) in
     x86_64)
         sed -e '/m64=/s/lib64/lib/' \
@@ -525,7 +363,6 @@ gcc)
     ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/13.2.0/liblto_plugin.so \
         /usr/lib/bfd-plugins/
 
-
     echo 'int main(){}' > dummy.c
     cc dummy.c -v -Wl,--verbose &> dummy.log
     readelf -l a.out | grep ': /lib'
@@ -536,25 +373,12 @@ gcc)
     grep "/lib.*/libc.so.6 " dummy.log
     grep found dummy.log
     rm -v dummy.c a.out dummy.log
-
     mkdir -pv /usr/share/gdb/auto-load/usr/lib
     mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
-    
-
-
-
-    
-
-    
-    popd
-
     popd
 ;;
 
 ncurses)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr           \
             --mandir=/usr/share/man \
             --with-shared           \
@@ -564,8 +388,6 @@ ncurses)
             --enable-pc-files       \
             --enable-widec          \
             --with-pkg-config-libdir=/usr/lib/pkgconfig
-
-
     safe_make
     make DESTDIR=$PWD/dest install
     install -vm755 dest/usr/lib/libncursesw.so.6.4 /usr/lib
@@ -573,113 +395,65 @@ ncurses)
     sed -e 's/^#if.*XOPEN.*$/#if 1/' \
         -i dest/usr/include/curses.h
     cp -av dest/* /     
-
     for lib in ncurses form panel menu ; do
         ln -sfv lib${lib}w.so /usr/lib/lib${lib}.so
         ln -sfv ${lib}w.pc    /usr/lib/pkgconfig/${lib}.pc
     done
-
     ln -sfv libncursesw.so /usr/lib/libcurses.so
     cp -v -R doc -T /usr/share/doc/ncurses-6.4-20230520
-
-    
-
-
-    popd
-
 ;;
 
 sed)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr
     safe_make
     make html
-
     chown -R tester .
     su tester -c "PATH=$PATH make check"
-
     make install
     install -d -m755           /usr/share/doc/sed-4.9
     install -m644 doc/sed.html /usr/share/doc/sed-4.9
-
-    popd
 ;;
 
 psmisc)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr
     safe_make
-
     make check
-
     make install
-
-    popd
 ;;
 
 gettext)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr    \
             --disable-static \
             --docdir=/usr/share/doc/gettext-0.22.4
-
     safe_make
-
     make check
     make install
     chmod -v 0755 /usr/lib/preloadable_libintl.so
-
-    
-
-    popd
 ;;
 
 bison)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr --docdir=/usr/share/doc/bison-3.8.2
     safe_make
-
     make check
     make install
-
-    popd
 ;;
 
 
 grep)
-    reinstall "${1}"
-    push_into "${1}"
-
     sed -i "s/echo/#echo/" src/egrep.sh
     ./configure --prefix=/usr
-
     safe_make
     make check
     make install
-    popd
 ;;
 
 bash)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr             \
             --without-bash-malloc     \
             --with-installed-readline \
             --docdir=/usr/share/doc/bash-5.2.21
-
     safe_make
-
     chown -R tester .
-
 su -s /usr/bin/expect tester << EOF
 set timeout -1
 spawn make tests
@@ -687,81 +461,45 @@ expect eof
 lassign [wait] _ _ _ value
 exit $value
 EOF
-
 make install
 exec /usr/bin/bash --login
-
-
-    popd
 ;;
 
 libtool)
-    reinstall "${1}"
-    push_into "${1}"
-    
     ./configure --prefix=/usr
     safe_make
-
     make -k check
     make install
     rm -fv /usr/lib/libltdl.a
-
-
-
-    popd
 ;;
 
 gdbm)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr    \
             --disable-static \
             --enable-libgdbm-compat
-
     safe_make
     make check
     make install
-
-    
-    popd
 ;;
 
 gperf)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr --docdir=/usr/share/doc/gperf-3.1
     safe_make
-
     make -j1 check
     make install
-
-    popd
 ;;
 
 expat)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr    \
             --disable-static \
             --docdir=/usr/share/doc/expat-2.6.0
-    
-
     safe_make
-
     make check
     make install
     install -v -m644 doc/*.{html,css} /usr/share/doc/expat-2.6.0
-
-
-    popd
 ;;
-inetutils)
-    reinstall "${1}"
-    push_into "${1}"
 
+inetutils)
     ./configure --prefix=/usr        \
             --bindir=/usr/bin    \
             --localstatedir=/var \
@@ -774,36 +512,21 @@ inetutils)
             --disable-servers
 
     safe_make
-
     make check
     make install
     mv -v /usr/{,s}bin/ifconfig
-
-
-    popd
 ;;
 
 less)
-    reinstall "${1}"
-    push_into "${1}"
-
     ./configure --prefix=/usr --sysconfdir=/etc
-    
     safe_make
     make check
     make install
-
-
-    popd
 ;;
 
 perl)
-    reinstall "${1}"
-    push_into "${1}"
-
     export BUILD_ZLIB=False
     export BUILD_BZIP2=0
-
     sh Configure -des                                         \
              -Dprefix=/usr                                \
              -Dvendorprefix=/usr                          \
@@ -823,30 +546,487 @@ perl)
     TEST_JOBS=$(nproc) make test_harness
     make install
     unset BUILD_ZLIB BUILD_BZIP2
-    
-    popd
 ;;
 
 XML-Parser)
-    reinstall "${1}"
-    push_into "${1}"
-
     perl Makefile.PL
     safe_make
-
     make test 
     make install
-
-
-    popd
 ;;
 
 intltool)
-echo ok
+    sed -i 's:\\\${:\\\$\\{:' intltool-update.in
+    ./configure --prefix=/usr
+    safe_make
+    make check
+    make install
+    install -v -Dm644 doc/I18N-HOWTO /usr/share/doc/intltool-0.51.0/I18N-HOWTO
 ;;
 
+autoconf)
+    ./configure --prefix=/usr
+    safe_make
+    make check
+    make install
+;;
+
+automake)
+    ./configure --prefix=/usr --docdir=/usr/share/doc/automake-1.16.5
+    safe_make
+    make -j$(($(nproc)>4?$(nproc):4)) check
+    make install
+;;
+
+openssl)
+    ./config --prefix=/usr         \
+         --openssldir=/etc/ssl \
+         --libdir=lib          \
+         shared                \
+         zlib-dynamic
+    safe_make
+    HARNESS_JOBS=$(nproc) make test
+    sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
+    make MANSUFFIX=ssl install
+    mv -v /usr/share/doc/openssl /usr/share/doc/openssl-3.2.1
+    cp -vfr doc/* /usr/share/doc/openssl-3.2.1
+;;
+
+kmod)
+./configure --prefix=/usr          \
+            --sysconfdir=/etc      \
+            --with-openssl         \
+            --with-xz              \
+            --with-zstd            \
+            --with-zlib
+safe_make
+make install
+for target in depmod insmod modinfo modprobe rmmod; do
+  ln -sfv ../bin/kmod /usr/sbin/$target
+done
+ln -sfv kmod /usr/bin/lsmod
+;;
+
+elfutils)
+./configure --prefix=/usr                \
+            --disable-debuginfod         \
+            --enable-libdebuginfod=dummy
+safe_make
+make check
+make -C libelf install
+install -vm644 config/libelf.pc /usr/lib/pkgconfig
+rm /usr/lib/libelf.a
+;;
+
+libffi)
+./configure --prefix=/usr          \
+            --disable-static       \
+            --with-gcc-arch=native
+safe_make
+make check
+make install
+;;
+
+Python)
+./configure --prefix=/usr        \
+            --enable-shared      \
+            --with-system-expat  \
+            --enable-optimizations
+safe_make
+make install
+cat > /etc/pip.conf << EOF
+[global]
+root-user-action = ignore
+disable-pip-version-check = true
+EOF
+install -v -dm755 /usr/share/doc/python-3.12.2/html
+tar --no-same-owner \
+    -xvf ../python-3.12.2-docs-html.tar.bz2
+cp -R --no-preserve=mode python-3.12.2-docs-html/* \
+    /usr/share/doc/python-3.12.2/html
+;;
+
+flit_core)
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --no-user --find-links dist flit_core
+;;
+
+wheel)
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links=dist wheel
+;;
+
+setuptools)
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links dist setuptools
+;;
+
+ninja)
+export NINJAJOBS=4
+sed -i '/int Guess/a \
+  int   j = 0;\
+  char* jobs = getenv( "NINJAJOBS" );\
+  if ( jobs != NULL ) j = atoi( jobs );\
+  if ( j > 0 ) return j;\
+' src/ninja.cc
+python3 configure.py --bootstrap
+./ninja ninja_test
+./ninja_test --gtest_filter=-SubprocessTest.SetWithLots
+install -vm755 ninja /usr/bin/
+install -vDm644 misc/bash-completion /usr/share/bash-completion/completions/ninja
+install -vDm644 misc/zsh-completion  /usr/share/zsh/site-functions/_ninja
+;;
+
+meson)
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links dist meson
+install -vDm644 data/shell-completions/bash/meson /usr/share/bash-completion/completions/meson
+install -vDm644 data/shell-completions/zsh/_meson /usr/share/zsh/site-functions/_meson
+;;
+
+coreutils)
+sed -e '/n_out += n_hold/,+4 s|.*bufsize.*|//&|' \
+    -i src/split.c
+autoreconf -fiv
+FORCE_UNSAFE_CONFIGURE=1 ./configure \
+            --prefix=/usr            \
+            --enable-no-install-program=kill,uptime
+safe_make
+make NON_ROOT_USERNAME=tester check-root
+groupadd -g 102 dummy -U tester
+chown -R tester . 
+su tester -c "PATH=$PATH make RUN_EXPENSIVE_TESTS=yes check"
+groupdel dummy
+make install
+mv -v /usr/bin/chroot /usr/sbin
+mv -v /usr/share/man/man1/chroot.1 /usr/share/man/man8/chroot.8
+sed -i 's/"1"/"8"/' /usr/share/man/man8/chroot.8
+;;
+
+check)
+./configure --prefix=/usr --disable-static
+safe_make
+make check
+make docdir=/usr/share/doc/check-0.15.2 install
+;;
+
+diffutils)
+./configure --prefix=/usr
+safe_make
+make check
+make install
+;;
+
+gawk)
+sed -i 's/extras//' Makefile.in
+./configure --prefix=/usr
+safe_make
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+rm -f /usr/bin/gawk-5.3.0
+make install
+ln -sv gawk.1 /usr/share/man/man1/awk.1
+mkdir -pv                                   /usr/share/doc/gawk-5.3.0
+cp    -v doc/{awkforai.txt,*.{eps,pdf,jpg}} /usr/share/doc/gawk-5.3.0
+;;
+
+findutils)
+./configure --prefix=/usr --localstatedir=/var/lib/locate
+safe_make
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+make install
+;;
+
+groff)
+PAGE=A4 ./configure --prefix=/usr
+safe_make
+make check
+make install
+;;
+
+gzip)
+./configure --prefix=/usr
+safe_make
+make check
+make install
+;;
+
+iproute2)
+sed -i /ARPD/d Makefile
+rm -fv man/man8/arpd.8
+make NETNS_RUN_DIR=/run/netns
+make SBINDIR=/usr/sbin install
+mkdir -pv             /usr/share/doc/iproute2-6.7.0
+cp -v COPYING README* /usr/share/doc/iproute2-6.7.0
+;;
+
+kbd)
+sed -i '/RESIZECONS_PROGS=/s/yes/no/' configure
+sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+./configure --prefix=/usr --disable-vlock
+safe_make
+make check
+make install
+cp -R -v docs/doc -T /usr/share/doc/kbd-2.6.4
+;;
+
+libpipeline)
+./configure --prefix=/usr
+safe_make
+make check
+make install
+;;
+
+make)
+./configure --prefix=/usr
+safe_make
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+make install
+;;
+
+patch)
+./configure --prefix=/usr
+safe_make
+make check
+make install
+;;
+
+tar)
+FORCE_UNSAFE_CONFIGURE=1  \
+./configure --prefix=/usr
+safe_make
+make check
+make install
+make -C doc install-html docdir=/usr/share/doc/tar-1.35
+;;
+
+texinfo)
+./configure --prefix=/usr
+safe_make
+make check
+make install
+make TEXMF=/usr/share/texmf install-tex
+pushd /usr/share/info
+  rm -v dir
+  for f in *
+    do install-info $f dir 2>/dev/null
+  done
+popd
+;;
+
+vim)
+echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+./configure --prefix=/usr
+safe_make
+chown -R tester .
+su tester -c "TERM=xterm-256color LANG=en_US.UTF-8 make -j1 test" \
+   &> vim-test.log
+make install
+ln -sv vim /usr/bin/vi
+for L in  /usr/share/man/{,*/}man1/vim.1; do
+    ln -sv vim.1 $(dirname $L)/vi.1
+done
+ln -sv ../vim/vim91/doc /usr/share/doc/vim-9.1.0041
+cat > /etc/vimrc << "EOF"
+" Begin /etc/vimrc
+
+" Ensure defaults are set before customizing settings, not after
+source $VIMRUNTIME/defaults.vim
+let skip_defaults_vim=1
+
+set nocompatible
+set backspace=2
+set mouse=
+syntax on
+if (&term == "xterm") || (&term == "putty")
+  set background=dark
+endif
+
+" End /etc/vimrc
+EOF
+vim -c ':options'
+;;
+
+MarkupSafe)
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --no-user --find-links dist Markupsafe
+;;
+
+Jinja2)
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --no-user --find-links dist Jinja2
+;;
+
+udev-lfs)
+sed -i -e 's/GROUP="render"/GROUP="video"/' \
+       -e 's/GROUP="sgx", //' rules.d/50-udev-default.rules.in
+sed '/systemd-sysctl/s/^/#/' -i rules.d/99-systemd.rules.in
+sed '/NETWORK_DIRS/s/systemd/udev/' -i src/basic/path-lookup.h
+
+mkdir -p build
+cd       build
+
+meson setup \
+      --prefix=/usr                 \
+      --buildtype=release           \
+      -Dmode=release                \
+      -Ddev-kvm-mode=0660           \
+      -Dlink-udev-shared=false      \
+      -Dlogind=false                \
+      -Dvconsole=false              \
+      ..
+
+export udev_helpers=$(grep "'name' :" ../src/udev/meson.build | \
+                      awk '{print $3}' | tr -d ",'" | grep -v 'udevadm')
+
+ninja udevadm systemd-hwdb                                           \
+      $(ninja -n | grep -Eo '(src/(lib)?udev|rules.d|hwdb.d)/[^ ]*') \
+      $(realpath libudev.so --relative-to .)                         \
+      $udev_helpers
+
+install -vm755 -d {/usr/lib,/etc}/udev/{hwdb.d,rules.d,network}
+install -vm755 -d /usr/{lib,share}/pkgconfig
+install -vm755 udevadm                             /usr/bin/
+install -vm755 systemd-hwdb                        /usr/bin/udev-hwdb
+ln      -svfn  ../bin/udevadm                      /usr/sbin/udevd
+cp      -av    libudev.so{,*[0-9]}                 /usr/lib/
+install -vm644 ../src/libudev/libudev.h            /usr/include/
+install -vm644 src/libudev/*.pc                    /usr/lib/pkgconfig/
+install -vm644 src/udev/*.pc                       /usr/share/pkgconfig/
+install -vm644 ../src/udev/udev.conf               /etc/udev/
+install -vm644 rules.d/* ../rules.d/README         /usr/lib/udev/rules.d/
+install -vm644 $(find ../rules.d/*.rules \
+                      -not -name '*power-switch*') /usr/lib/udev/rules.d/
+install -vm644 hwdb.d/*  ../hwdb.d/{*.hwdb,README} /usr/lib/udev/hwdb.d/
+install -vm755 $udev_helpers                       /usr/lib/udev
+install -vm644 ../network/99-default.link          /usr/lib/udev/network
+tar -xvf ../../udev-lfs-20230818.tar.xz
+make -f udev-lfs-20230818/Makefile.lfs install
+tar -xf ../../systemd-man-pages-255.tar.xz                            \
+    --no-same-owner --strip-components=1                              \
+    -C /usr/share/man --wildcards '*/udev*' '*/libudev*'              \
+                                  '*/systemd.link.5'                  \
+                                  '*/systemd-'{hwdb,udevd.service}.8
+
+sed 's|systemd/network|udev/network|'                                 \
+    /usr/share/man/man5/systemd.link.5                                \
+  > /usr/share/man/man5/udev.link.5
+
+sed 's/systemd\(\\\?-\)/udev\1/' /usr/share/man/man8/systemd-hwdb.8   \
+                               > /usr/share/man/man8/udev-hwdb.8
+
+sed 's|lib.*udevd|sbin/udevd|'                                        \
+    /usr/share/man/man8/systemd-udevd.service.8                       \
+  > /usr/share/man/man8/udevd.8
+
+rm /usr/share/man/man*/systemd*
+unset udev_helpers
+udev-hwdb update
+;;
+
+man-db)
+./configure --prefix=/usr                         \
+            --docdir=/usr/share/doc/man-db-2.12.0 \
+            --sysconfdir=/etc                     \
+            --disable-setuid                      \
+            --enable-cache-owner=bin              \
+            --with-browser=/usr/bin/lynx          \
+            --with-vgrind=/usr/bin/vgrind         \
+            --with-grap=/usr/bin/grap             \
+            --with-systemdtmpfilesdir=            \
+            --with-systemdsystemunitdir=
+safe_make
+make check
+make install
+;;
+
+procps-ng)
+./configure --prefix=/usr                           \
+            --docdir=/usr/share/doc/procps-ng-4.0.4 \
+            --disable-static                        \
+            --disable-kill
+
+safe_make
+make -k check
+make install
+;;
+util-linux)
+sed -i '/test_mkfds/s/^/#/' tests/helpers/Makemodule.am
+./configure --bindir=/usr/bin    \
+            --libdir=/usr/lib    \
+            --runstatedir=/run   \
+            --sbindir=/usr/sbin  \
+            --disable-chfn-chsh  \
+            --disable-login      \
+            --disable-nologin    \
+            --disable-su         \
+            --disable-setpriv    \
+            --disable-runuser    \
+            --disable-pylibmount \
+            --disable-static     \
+            --without-python     \
+            --without-systemd    \
+            --without-systemdsystemunitdir        \
+            ADJTIME_PATH=/var/lib/hwclock/adjtime \
+            --docdir=/usr/share/doc/util-linux-2.39.3
+safe_make
+chown -R tester .
+su tester -c "make -k check"
+make install
+;;
+
+e2fsprogs)
+mkdir -v build
+pushd       build
+
+../configure --prefix=/usr           \
+             --sysconfdir=/etc       \
+             --enable-elf-shlibs     \
+             --disable-libblkid      \
+             --disable-libuuid       \
+             --disable-uuidd         \
+             --disable-fsck
+safe_make
+make check; make install; 
+rm -fv /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+gunzip -v /usr/share/info/libext2fs.info.gz
+install-info --dir-file=/usr/share/info/dir /usr/share/info/libext2fs.info
+makeinfo -o      doc/com_err.info ../lib/et/com_err.texinfo
+install -v -m644 doc/com_err.info /usr/share/info
+install-info --dir-file=/usr/share/info/dir /usr/share/info/com_err.info
+sed 's/metadata_csum_seed,//' -i /etc/mke2fs.conf
+popd
+;;
+
+sysklogd)
+sed -i '/Error loading kernel symbols/{n;n;d}' ksym_mod.c
+sed -i 's/union wait/int/' syslogd.c
+safe_make
+make BINDIR=/sbin install
+cat > /etc/syslog.conf << "EOF"
+# Begin /etc/syslog.conf
+
+auth,authpriv.* -/var/log/auth.log
+*.*;auth,authpriv.none -/var/log/sys.log
+daemon.* -/var/log/daemon.log
+kern.* -/var/log/kern.log
+mail.* -/var/log/mail.log
+user.* -/var/log/user.log
+*.emerg *
+
+# End /etc/syslog.conf
+EOF
+;;
+
+sysvinit)
+safe_make
+make install
+;;
 
 esac
+popd
 }
 
 
