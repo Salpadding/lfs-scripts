@@ -55,7 +55,7 @@ intltool 0.51.0 https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0
 autoconf 2.72 https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz
 openssl 3.2.1 https://www.openssl.org/source/openssl-3.2.1.tar.gz
 kmod 31 https://www.kernel.org/pub/linux/utils/kernel/kmod/kmod-31.tar.xz
-elfutils-0.190.tar.bz2 elfutils-0.190.tar.bz2 https://sourceware.org/ftp/elfutils/0.190/elfutils-0.190.tar.bz2
+elfutils 0.190 https://sourceware.org/ftp/elfutils/0.190/elfutils-0.190.tar.bz2
 libffi 3.4.4 https://github.com/libffi/libffi/releases/download/v3.4.4/libffi-3.4.4.tar.gz
 flit_core 3.9.0 https://pypi.org/packages/source/f/flit-core/flit_core-3.9.0.tar.gz
 wheel 0.42.0 https://pypi.org/packages/source/w/wheel/wheel-0.42.0.tar.gz
@@ -76,3 +76,4 @@ procps-ng 4.0.4 https://sourceforge.net/projects/procps-ng/files/Production/proc
 e2fsprogs 1.47.0 https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.47.0/e2fsprogs-1.47.0.tar.gz
 sysklogd 1.5.1 https://www.infodrom.org/projects/sysklogd/download/sysklogd-1.5.1.tar.gz
 sysvinit 3.08 https://github.com/slicer69/sysvinit/releases/download/3.08/sysvinit-3.08.tar.xz
+automake 1.16.5 https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.xz

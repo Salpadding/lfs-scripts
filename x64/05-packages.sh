@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 cur=`dirname "${0}"`
 cur=`cd "${cur}"; pwd`
 pushd "${cur}"
@@ -94,7 +95,7 @@ packages=(
     https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.xz
     https://ftp.gnu.org/gnu/gdbm/gdbm-1.23.tar.gz
     https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz
-    https://prdownloads.sourceforge.net/expat/expat-2.6.0.tar.xz
+    http://sources.buildroot.net/expat/expat-2.6.0.tar.xz
     https://ftp.gnu.org/gnu/inetutils/inetutils-2.5.tar.xz
     https://www.greenwoodsoftware.com/less/less-643.tar.gz
     https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz
@@ -123,6 +124,8 @@ packages=(
     https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.47.0/e2fsprogs-1.47.0.tar.gz
     https://www.infodrom.org/projects/sysklogd/download/sysklogd-1.5.1.tar.gz
     https://github.com/slicer69/sysvinit/releases/download/3.08/sysvinit-3.08.tar.xz
+    https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.xz
+    https://github.com/systemd/systemd/archive/v255/systemd-255.tar.gz
 )
 
 
@@ -150,7 +153,7 @@ rm packages.csv
 for p in "${packages[@]}"; do
     local base=`basename "${p}"`
     # remove extensions
-    local stripped=`echo "${base}" | sed -e 's/.tar.xz$//' -e 's/.tar.gz$//'`
+    local stripped=`echo "${base}" | sed -e 's/.tar.xz$//' -e 's/.tar.gz$//' -e 's/.tar.bz2$//'`
     local awk_expr='{print $1}'
     local name=`echo "${stripped}" | sed -E 's/-[0-9.]+(-[0-9]+)?$//'`
     local version=`echo "${stripped}" | sed "s/^${name}-//"`
