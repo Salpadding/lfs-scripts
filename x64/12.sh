@@ -4,7 +4,7 @@ cur=`dirname "${0}"`
 cur=`cd "${cur}"; pwd`
 pushd "${cur}"
 
-export LFS=/
+export LFS=
 
 source "install_helpers.sh"
 

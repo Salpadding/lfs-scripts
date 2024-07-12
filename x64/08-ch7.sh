@@ -25,5 +25,6 @@ else
 fi
 
 mkdir -p /mnt/lfs/lfs
-mount --bind `pwd` /mnt/lfs/lfs
+mount --bind `${cur}/..` /mnt/lfs/lfs
+mount --bind `${cur}/../sources` /mnt/lfs/sources
 

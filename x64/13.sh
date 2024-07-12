@@ -24,7 +24,7 @@ man-pages)
     make prefix=/usr install
 ;;
 
-iana-etc)
+iana)
     cp services protocols /etc
 ;;
 
@@ -970,7 +970,7 @@ pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
 pip3 install --no-index --no-user --find-links dist Jinja2
 ;;
 
-udev)
+udev-lfs)
 sed -i -e 's/GROUP="render"/GROUP="video"/' \
        -e 's/GROUP="sgx", //' rules.d/50-udev-default.rules.in
 sed '/systemd-sysctl/s/^/#/' -i rules.d/99-systemd.rules.in

@@ -16,7 +16,7 @@ __reinstall() {
 
     ! [[ -d "${src_dir}" ]]  && echo "extract failed: ${src_dir} not exists" && exit 1
 
-    # check if we need push
+    # check if we need patch
     local patch_url=$(grep "^${1} " "${cur}/resources/patches.txt" | awk '{print $2}')
 
     if [[ -z "${patch_url}" ]]; then
