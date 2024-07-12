@@ -104,6 +104,9 @@ gen_packages_txt() {
             systemd-man-pages-255.tar.xz)
             name=systemd-man-pages
             ;;
+            XML-Parser-2.47.tar.gz)
+            name=XML-Parser
+            ;;
         esac
 
         pushd "${cur}/../sources" >/dev/null
