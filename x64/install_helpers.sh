@@ -1,50 +1,38 @@
 source_dir() {
-    local tar_file=$(grep "^${1} " "${cur}/resources/packages.txt" | awk '{print $2}')
-
-    pushd "${LFS}/sources" >/dev/null
-
-
-
-    popd
+    grep "^${1} " "${cur}/resources/packages.txt" | awk '{print $3}'
 }
  
 __reinstall() {
-    pushd "${LFS}/sources"
+    pushd "${LFS}/sources" >/dev/null
 
-    local url=$(cat "${cur}/packages.csv" | grep "^${1}" | awk '{print $3}')
+    local zip=$(grep "^${1} " "${cur}/resources/packages.txt" | awk '{print $2}')
 
-    [[ -z "${url}" ]] && echo "url not exists" && exit 1
-    [[ -f `basename ${url}` ]] || wget "${url}"
-
+    [[ -z "${zip}" ]] && echo "${1} not found in packages.txt" && exit 1
+    ! [[ -f "${zip}" ]] && echo "${1} not downloaded" && exit 1
     
-    local ver=$(cat "${cur}/packages.csv" | grep "^${1}" | awk '{print $2}')
     local src_dir=$(source_dir "${1}")
-    
-    if [[ "${1}" == tcl ]]; then
-        src_dir="tcl8.6.13"
-    fi
-
     [[ -d "${src_dir}" ]] && rm -rf "${src_dir}"
-    tar -xf `basename ${url}` -C .
+    tar -xf "${zip}" -C .
 
     ! [[ -d "${src_dir}" ]]  && echo "extract failed: ${src_dir} not exists" && exit 1
 
     # check if we need push
-    local patch_url=$(cat "${cur}/patch.csv" | grep "^${1}" | awk '{print $2}')
+    local patch_url=$(grep "^${1} " "${cur}/resources/patches.txt" | awk '{print $2}')
 
-    if [[ -n "${patch_url}" ]]; then
-        [[ -f `basename ${patch_url}` ]] || wget "${patch_url}"
-        pushd "${src_dir}"
-
-        echo "patch ${src_dir} with $(basename ${patch_url})"
-        ! [[ -f "../$(basename ${patch_url})" ]] && echo patch file not found && exit 1
-
-        patch -Np1 -i "../$(basename ${patch_url})"
-        popd
+    if [[ -z "${patch_url}" ]]; then
+        popd >/dev/null
+        return
     fi
 
+    local patch_file=$(basename "${patch_url}")
+    ! [[ -f "${patch_file}" ]] && echo "patch file ${patch_file} not download" && exit 1
 
-    popd
+    pushd "${src_dir}" >/dev/null
+        echo "patch ${src_dir} with ${patch_file}"
+        patch -Np1 -i "../${patch_file}"
+    popd >/dev/null
+
+    popd >/dev/null
 }
 
 reinstall() {
@@ -54,14 +42,14 @@ reinstall() {
 }
 
 move_into() {
-    pushd "${LFS}/sources"
-    local dst=
-    for x in "${@}"; do
-        [[ -z "${dst}" ]] && dst="${x}-$(get_ver ${x})" && continue
-        local src="${x}-$(get_ver ${x})" 
-        echo mv "${src}" "${dst}/${x}"
-        mv "${src}" "${dst}/${x}"
-    done
+    pushd "${LFS}/sources" >/dev/null
+        local dst=
+        for x in "${@}"; do
+            local dir=$(source_dir "${x}")
+            [[ -z "${dst}" ]] && dst="${dir}" && continue
+            mv -v "${dir}" "${dst}/${x}"
+        done
+    popd >/dev/null
 }
 
 push_into() {
