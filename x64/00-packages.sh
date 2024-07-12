@@ -5,20 +5,20 @@ cur=$(cd "${cur}"; pwd)
 
 
 package_checksums() {
-    xq -m -q 'dd > p:nth-child(3) code' ${cur}/resources/packages.html
+    xq -m -q 'dd p:contains("MD5 sum:") code' ${cur}/resources/packages.html
 }
 
 
 patch_checksums() {
-    xq -m -q 'dd > p:nth-child(2) code' ${cur}/resources/patches.html
+    xq -m -q 'dd p:contains("MD5 sum:") code' ${cur}/resources/patches.html
 }
 
 packages() {
-    xq -q 'dd p:nth-child(2) a' -m ${cur}/resources/packages.html
+    xq -q 'dd p:contains("Download:") a' -m ${cur}/resources/packages.html
 }
 
 patches() {
-    xq -q 'dd p:nth-child(1) a' -m ${cur}/resources/patches.html
+    xq -q 'dd p:contains("Download:") a' -m ${cur}/resources/patches.html
 }
 
 mirror_of() {
@@ -80,7 +80,11 @@ gen_packages_txt() {
         local b="$(basename ${p})"
         local name=$(echo "${b}" | awk -F '-' '{print $1}')
         local dir=
-        
+
+        if echo $b | grep -q html.tar ;then 
+            let i++
+            continue
+        fi
         case "${b}" in
             expect5.45.4.tar.gz)
             name=expect

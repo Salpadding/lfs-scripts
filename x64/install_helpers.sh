@@ -1,11 +1,11 @@
 source_dir() {
-    grep "^${1} " "${cur}/resources/packages.txt" | awk '{print $3}'
+    grep "^${1} " "${cur}/resources/packages.txt" | sed -n '$p' | awk '{print $3}' 
 }
  
 __reinstall() {
     pushd "${LFS}/sources" >/dev/null
 
-    local zip=$(grep "^${1} " "${cur}/resources/packages.txt" | awk '{print $2}')
+    local zip=$(grep "^${1} " "${cur}/resources/packages.txt" | sed -n '$p' | awk '{print $2}')
 
     [[ -z "${zip}" ]] && echo "${1} not found in packages.txt" && exit 1
     ! [[ -f "${zip}" ]] && echo "${1} not downloaded" && exit 1
