@@ -977,7 +977,7 @@ sed '/systemd-sysctl/s/^/#/' -i rules.d/99-systemd.rules.in
 sed '/NETWORK_DIRS/s/systemd/udev/' -i src/basic/path-lookup.h
 
 mkdir -p build
-cd       build
+pushd       build
 
 meson setup \
       --prefix=/usr                 \
@@ -1013,8 +1013,10 @@ install -vm644 $(find ../rules.d/*.rules \
 install -vm644 hwdb.d/*  ../hwdb.d/{*.hwdb,README} /usr/lib/udev/hwdb.d/
 install -vm755 $udev_helpers                       /usr/lib/udev
 install -vm644 ../network/99-default.link          /usr/lib/udev/network
+
 tar -xvf ../../udev-lfs-20230818.tar.xz
 make -f udev-lfs-20230818/Makefile.lfs install
+
 tar -xf ../../systemd-man-pages-255.tar.xz                            \
     --no-same-owner --strip-components=1                              \
     -C /usr/share/man --wildcards '*/udev*' '*/libudev*'              \
@@ -1035,7 +1037,11 @@ sed 's|lib.*udevd|sbin/udevd|'                                        \
 rm /usr/share/man/man*/systemd*
 unset udev_helpers
 udev-hwdb update
+
+popd
 ;;
+
+
 
 man-db)
 ./configure --prefix=/usr                         \
@@ -1053,7 +1059,7 @@ make check
 make install
 ;;
 
-procps-ng)
+procps)
 ./configure --prefix=/usr                           \
             --docdir=/usr/share/doc/procps-ng-4.0.4 \
             --disable-static                        \
@@ -1063,6 +1069,7 @@ safe_make
 make -k check
 make install
 ;;
+
 util-linux)
 sed -i '/test_mkfds/s/^/#/' tests/helpers/Makemodule.am
 ./configure --bindir=/usr/bin    \
