@@ -129,11 +129,9 @@ install_file() {
     }
 
     ./configure --prefix=/usr --host=$LFS_TGT --build=$(./config.guess)
-    make DESTDIR=$LFS install
     make FILE_COMPILE=$(pwd)/build/src/file
+    make DESTDIR=$LFS install
     rm -v $LFS/usr/lib/libmagic.la
-
-
     popd
 }
 

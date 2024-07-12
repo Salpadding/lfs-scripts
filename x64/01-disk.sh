@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # create loop disk
 #
-sudo mkdir -p /var/lib/lfs
-me=`whoami`
+[[ "$(id -u)" -ne 0 ]] && use root please && exit 1
 
-sudo chown ${me} /var/lib/lfs
+mkdir -p /var/lib/lfs
 
 # create two partition
 if ! [[ -f /var/lib/lfs/lfs.img ]]; then
@@ -15,9 +14,9 @@ fi
 
 # mount it
 lfs_loop=`losetup -f`
-sudo losetup -P "${lfs_loop}" /var/lib/lfs/lfs.img
+losetup -P "${lfs_loop}" /var/lib/lfs/lfs.img
 
-sudo mkfs.ext4 "${lfs_loop}p2"
-sudo mkdir -p /mnt/lfs
-sudo chown "${me}" /mnt/lfs
-sudo mount "${lfs_loop}p2" /mnt/lfs
+mkfs.ext4 "${lfs_loop}p2"
+mkdir -p /mnt/lfs
+chown "${me}" /mnt/lfs
+mount "${lfs_loop}p2" /mnt/lfs

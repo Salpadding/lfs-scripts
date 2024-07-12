@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 cur=`dirname "${0}"`
 cur=`cd "${cur}"; pwd`
 pushd "${cur}"
@@ -123,6 +124,8 @@ packages=(
     https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.47.0/e2fsprogs-1.47.0.tar.gz
     https://www.infodrom.org/projects/sysklogd/download/sysklogd-1.5.1.tar.gz
     https://github.com/slicer69/sysvinit/releases/download/3.08/sysvinit-3.08.tar.xz
+    https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.xz
+    https://github.com/systemd/systemd/archive/v255/systemd-255.tar.gz
 )
 
 

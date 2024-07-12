@@ -76,3 +76,5 @@ procps-ng 4.0.4 https://sourceforge.net/projects/procps-ng/files/Production/proc
 e2fsprogs 1.47.0 https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.47.0/e2fsprogs-1.47.0.tar.gz
 sysklogd 1.5.1 https://www.infodrom.org/projects/sysklogd/download/sysklogd-1.5.1.tar.gz
 sysvinit 3.08 https://github.com/slicer69/sysvinit/releases/download/3.08/sysvinit-3.08.tar.xz
+automake 1.16.5 https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.xz
+

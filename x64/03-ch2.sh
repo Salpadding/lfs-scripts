@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[[ "$(id -u)" -ne 0 ]] && use root please && exit 1
+
 cur=`dirname "${0}"`
 cur=`cd "${cur}"; pwd`
 

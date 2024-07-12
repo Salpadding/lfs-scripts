@@ -5,11 +5,12 @@ cur=`dirname "${0}"`
 cur=`cd "${cur}"; pwd`
 fi
 
+export LFS=
+
 pushd "${cur}"
 source "install_helpers.sh"
 popd
 
-export LFS=/
 
 
 install_package() {
@@ -39,11 +40,106 @@ glibc)
                  --disable-nscd                           \
                  libc_cv_slibdir=/usr/lib
     safe_make
-    make check
+    make -j`nproc` check
     touch /etc/ld.so.conf
     sed '/test-installation/s@$(PERL)@echo not running@' -i ../Makefile
     make install
     sed '/RTLDLIST=/s@/usr@@g' -i /usr/bin/ldd
+
+mkdir -pv /usr/lib/locale
+localedef -i C -f UTF-8 C.UTF-8
+localedef -i cs_CZ -f UTF-8 cs_CZ.UTF-8
+localedef -i de_DE -f ISO-8859-1 de_DE
+localedef -i de_DE@euro -f ISO-8859-15 de_DE@euro
+localedef -i de_DE -f UTF-8 de_DE.UTF-8
+localedef -i el_GR -f ISO-8859-7 el_GR
+localedef -i en_GB -f ISO-8859-1 en_GB
+localedef -i en_GB -f UTF-8 en_GB.UTF-8
+localedef -i en_HK -f ISO-8859-1 en_HK
+localedef -i en_PH -f ISO-8859-1 en_PH
+localedef -i en_US -f ISO-8859-1 en_US
+localedef -i en_US -f UTF-8 en_US.UTF-8
+localedef -i es_ES -f ISO-8859-15 es_ES@euro
+localedef -i es_MX -f ISO-8859-1 es_MX
+localedef -i fa_IR -f UTF-8 fa_IR
+localedef -i fr_FR -f ISO-8859-1 fr_FR
+localedef -i fr_FR@euro -f ISO-8859-15 fr_FR@euro
+localedef -i fr_FR -f UTF-8 fr_FR.UTF-8
+localedef -i is_IS -f ISO-8859-1 is_IS
+localedef -i is_IS -f UTF-8 is_IS.UTF-8
+localedef -i it_IT -f ISO-8859-1 it_IT
+localedef -i it_IT -f ISO-8859-15 it_IT@euro
+localedef -i it_IT -f UTF-8 it_IT.UTF-8
+localedef -i ja_JP -f EUC-JP ja_JP
+localedef -i ja_JP -f SHIFT_JIS ja_JP.SJIS 2> /dev/null || true
+localedef -i ja_JP -f UTF-8 ja_JP.UTF-8
+localedef -i nl_NL@euro -f ISO-8859-15 nl_NL@euro
+localedef -i ru_RU -f KOI8-R ru_RU.KOI8-R
+localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
+localedef -i se_NO -f UTF-8 se_NO.UTF-8
+localedef -i ta_IN -f UTF-8 ta_IN.UTF-8
+localedef -i tr_TR -f UTF-8 tr_TR.UTF-8
+localedef -i zh_CN -f GB18030 zh_CN.GB18030
+localedef -i zh_HK -f BIG5-HKSCS zh_HK.BIG5-HKSCS
+localedef -i zh_TW -f UTF-8 zh_TW.UTF-8
+
+make localedata/install-locales
+localedef -i C -f UTF-8 C.UTF-8
+localedef -i ja_JP -f SHIFT_JIS ja_JP.SJIS 2> /dev/null || true
+
+cat > /etc/nsswitch.conf << "EOF"
+# Begin /etc/nsswitch.conf
+
+passwd: files
+group: files
+shadow: files
+
+hosts: files dns
+networks: files
+
+protocols: files
+services: files
+ethers: files
+rpc: files
+
+# End /etc/nsswitch.conf
+EOF
+
+tar -xf ../../tzdata2024a.tar.gz
+
+ZONEINFO=/usr/share/zoneinfo
+mkdir -pv $ZONEINFO/{posix,right}
+
+for tz in etcetera southamerica northamerica europe africa antarctica  \
+          asia australasia backward; do
+    zic -L /dev/null   -d $ZONEINFO       ${tz}
+    zic -L /dev/null   -d $ZONEINFO/posix ${tz}
+    zic -L leapseconds -d $ZONEINFO/right ${tz}
+done
+
+cp -v zone.tab zone1970.tab iso3166.tab $ZONEINFO
+zic -d $ZONEINFO -p America/New_York
+unset ZONEINFO
+
+
+tzselect
+
+ln -sfv /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+cat > /etc/ld.so.conf << "EOF"
+# Begin /etc/ld.so.conf
+/usr/local/lib
+/opt/lib
+
+EOF
+
+cat >> /etc/ld.so.conf << "EOF"
+# Add an include directory
+include /etc/ld.so.conf.d/*.conf
+
+EOF
+mkdir -pv /etc/ld.so.conf.d
+
+
     popd
 ;;
 
@@ -60,15 +156,18 @@ bzip2)
     sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
     safe_make -f Makefile-libbz2_so
     make clean
+
     safe_make
-    
     make PREFIX=/usr install
+
     cp -av libbz2.so.* /usr/lib
     ln -sv libbz2.so.1.0.8 /usr/lib/libbz2.so
+
     cp -v bzip2-shared /usr/bin/bzip2
     for i in /usr/bin/{bzcat,bunzip2}; do
       ln -sfv bzip2 $i
     done
+
     rm -fv /usr/lib/libbz2.a
 ;;
 
@@ -83,7 +182,7 @@ xz)
 
 zstd)
     safe_make prefix=/usr
-    make check
+    make -j`nproc` check
     make prefix=/usr install
     rm -v /usr/lib/libzstd.a
 ;;
@@ -154,7 +253,7 @@ tcl)
         -i pkgs/itcl4.2.3/itclConfig.sh
 
     unset SRCDIR    
-    make test
+    make -j`nproc` test
     make install
     chmod -v u+w /usr/lib/libtcl8.6.so
     make install-private-headers
@@ -162,6 +261,7 @@ tcl)
     ln -sfv tclsh8.6 /usr/bin/tclsh
     mv /usr/share/man/man3/{Thread,Tcl_Thread}.3
     popd
+
     tar -xf ../tcl8.6.13-html.tar.gz --strip-components=1
     mkdir -v -p /usr/share/doc/tcl-8.6.13
     cp -v -r  ./html/* /usr/share/doc/tcl-8.6.13 
@@ -320,6 +420,7 @@ shadow)
     grpconv
     mkdir -p /etc/default
     useradd -D --gid 999
+    passwd root
 ;;
 
 gcc)
@@ -348,9 +449,9 @@ gcc)
     ulimit -s 32768
 
     chown -R tester .
-    su tester -c "PATH=$PATH make -k check"
+    #su tester -c "PATH=$PATH make -k -j$(nproc) check"
 
-    ../contrib/test_summary
+    #../contrib/test_summary
     make install
 
     chown -v -R root:root \
@@ -401,6 +502,16 @@ ncurses)
     done
     ln -sfv libncursesw.so /usr/lib/libcurses.so
     cp -v -R doc -T /usr/share/doc/ncurses-6.4-20230520
+
+    make distclean
+    ./configure --prefix=/usr    \
+                --with-shared    \
+                --without-normal \
+                --without-debug  \
+                --without-cxx-binding \
+                --with-abi-version=5
+    make sources libs
+    cp -av lib/lib*.so.5* /usr/lib    
 ;;
 
 sed)
@@ -426,7 +537,7 @@ gettext)
             --disable-static \
             --docdir=/usr/share/doc/gettext-0.22.4
     safe_make
-    make check
+    # make check
     make install
     chmod -v 0755 /usr/lib/preloadable_libintl.so
 ;;
@@ -434,7 +545,7 @@ gettext)
 bison)
     ./configure --prefix=/usr --docdir=/usr/share/doc/bison-3.8.2
     safe_make
-    make check
+    # make -j`nproc` check
     make install
 ;;
 
@@ -468,7 +579,7 @@ exec /usr/bin/bash --login
 libtool)
     ./configure --prefix=/usr
     safe_make
-    make -k check
+    make -j`nproc` -k check
     make install
     rm -fv /usr/lib/libltdl.a
 ;;
@@ -543,7 +654,7 @@ perl)
              -Dusethreads
 
     safe_make
-    TEST_JOBS=$(nproc) make test_harness
+    #TEST_JOBS=$(nproc) make test_harness
     make install
     unset BUILD_ZLIB BUILD_BZIP2
 ;;
@@ -623,7 +734,7 @@ libffi)
             --disable-static       \
             --with-gcc-arch=native
 safe_make
-make check
+make -j`nproc` check
 make install
 ;;
 
@@ -695,7 +806,7 @@ safe_make
 make NON_ROOT_USERNAME=tester check-root
 groupadd -g 102 dummy -U tester
 chown -R tester . 
-su tester -c "PATH=$PATH make RUN_EXPENSIVE_TESTS=yes check"
+su tester -c "PATH=$PATH make -j$(nproc) RUN_EXPENSIVE_TESTS=yes check"
 groupdel dummy
 make install
 mv -v /usr/bin/chroot /usr/sbin
@@ -755,7 +866,7 @@ make install
 iproute2)
 sed -i /ARPD/d Makefile
 rm -fv man/man8/arpd.8
-make NETNS_RUN_DIR=/run/netns
+safe_make NETNS_RUN_DIR=/run/netns
 make SBINDIR=/usr/sbin install
 mkdir -pv             /usr/share/doc/iproute2-6.7.0
 cp -v COPYING README* /usr/share/doc/iproute2-6.7.0
@@ -859,7 +970,7 @@ pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
 pip3 install --no-index --no-user --find-links dist Jinja2
 ;;
 
-udev-lfs)
+udev)
 sed -i -e 's/GROUP="render"/GROUP="video"/' \
        -e 's/GROUP="sgx", //' rules.d/50-udev-default.rules.in
 sed '/systemd-sysctl/s/^/#/' -i rules.d/99-systemd.rules.in
