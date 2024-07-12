@@ -70,6 +70,48 @@ download_all() {
     done
 }
 
+gen_packages_txt() {
+    local packages=(`packages`)
+
+    let i=0
+
+    while [[ "${i}" -lt "${#packages[@]}" ]]; do
+        local p="${packages[${i}]}" 
+        local b="$(basename ${p})"
+        local name=$(echo "${b}" | awk -F '-' '{print $1}')
+        local dir=
+        
+        case "${b}" in
+            expect5.45.4.tar.gz)
+            name=expect
+            ;;
+            tcl8.6.13-src.tar.gz)
+            name=tcl
+            ;;
+            man-db-2.12.0.tar.xz)
+            name=man-db
+            ;;
+            man-pages-6.06.tar.xz)
+            name=man-pages
+            ;;
+            util-linux-2.39.3.tar.xz)
+            name=util-linux
+            ;;
+            systemd-man-pages-255.tar.xz)
+            name=systemd-man-pages
+            ;;
+        esac
+
+        pushd "${cur}/../sources" >/dev/null
+            dir=$(tar -tf "${b}" | head -n1 | awk -F / '{print $1}')
+        popd >/dev/null
+
+        echo "${name} ${b} ${dir}"
+        let i++
+    done
+    echo "udev-lfs systemd-255.tar.gz systemd-255"
+}
+
 # e.g. transfer root@192.168.1.1:/mnt/lfs/sources
 transfer() {
     pushd "${cur}/../sources" >/dev/null

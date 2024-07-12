@@ -1,28 +1,11 @@
-get_ver() {
-    if [[ "${1}" == tcl ]] ; then
-        echo "8.6.13"
-        return
-    fi
-    if [[ "${1}" == expect ]] ; then
-        echo "5.45.4"
-        return
-    fi
-    cat "${cur}/packages.csv" | grep "^${1}" | awk '{print $2}'
-}
-
-get_url() {
-    cat "${cur}/packages.csv" | grep "^${1}" | awk '{print $3}'
-}
-
 source_dir() {
-    local ver=$(get_ver "${1}")
-    local d="${1}-${ver}"
-    
-    if [[ "${1}" == tcl ]] || [[ "${1}" == expect ]]; then
-        d="${1}${ver}"
-    fi
+    local tar_file=$(grep "^${1} " "${cur}/resources/packages.txt" | awk '{print $2}')
 
-    echo "${d}"
+    pushd "${LFS}/sources" >/dev/null
+
+
+
+    popd
 }
  
 __reinstall() {
